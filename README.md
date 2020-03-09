@@ -5,14 +5,14 @@ Add digital signature to PDF using [sybrexsys/VersyPDF](https://github.com/sybre
 
 ```json
 [
-{
-"filter": "Adobe.PPKMS",
-"subfilter": "adbe.pkcs7.sha1"
-},
-{
-"filter": "Adobe.PPKLite",
-"subfilter": "adbe.x509.rsa_sha1"
-}
+	{
+	"filter": "Adobe.PPKMS",
+	"subfilter": "adbe.pkcs7.sha1"
+	},
+	{
+	"filter": "Adobe.PPKLite",
+	"subfilter": "adbe.x509.rsa_sha1"
+	}
 ]
 ```
 
