@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<xliff version="1.0" xmlns:d4="http://www.4d.com/d4-ns">
+    <header>
+        <note>PDF Signature</note>
+    </header>
+    <group resname="themes">
+        <trans-unit id="" resname="A11BAC7C8F2242CCAF4B3010AA09836B" translate="no">
+            <source>PDF Signature Type</source>
+        </trans-unit>
+    </group>
+    <group restype="x-4DK#" d4:groupName="A11BAC7C8F2242CCAF4B3010AA09836B">
+        <trans-unit d4:value="0:L" id="A11BAC7C8F2242CCAF4B3010AA09836B.1">
+            <source>Adobe_PPKLite_adbe_x509_rsa_sha1</source>
+        </trans-unit>
+        <trans-unit d4:value="1:L" id="A11BAC7C8F2242CCAF4B3010AA09836B.2">
+            <source>Adobe_PPKMS_adbe_pkcs7_sha1</source>
+        </trans-unit>
+    </group>
+</xliff>

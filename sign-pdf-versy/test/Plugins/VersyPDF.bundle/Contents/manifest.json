@@ -1,0 +1,12 @@
+{
+    "name": "Sign PDF (VersyPDF)",
+    "id": 20000,
+    "commands": [
+        {
+            "theme": "VersyPDF",
+            "syntax": "SIGN PDF(&O;&O;&T;&T;&T;&L):J",
+            "threadSafe": true
+        }
+    ]
+}
+
