@@ -10,7 +10,6 @@ DOCUMENT TO BLOB:C525($path;$PDF)
   //3. Create PFX
   //openssl pkcs12 -export -in public.pem -inkey private.pem -out profile.pfx
 
-
 $path:=Get 4D folder:C485(Current resources folder:K5:16)+"profile.pfx"
 DOCUMENT TO BLOB:C525($path;$PFX)
 

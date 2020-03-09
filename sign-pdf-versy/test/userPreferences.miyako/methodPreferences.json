@@ -199,11 +199,11 @@
 	},
 	"Sources/Methods/TEST_1.4dm": {
 		"startSelection": 0,
-		"endSelection": 68,
-		"firstSelectedLine": 0,
-		"lastSelectedLine": 32,
+		"endSelection": 0,
+		"firstSelectedLine": 10,
+		"lastSelectedLine": 10,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-03-09T08:12:53.198Z"
+		"stamp": "2020-03-09T18:06:22.099Z"
 	}
 }

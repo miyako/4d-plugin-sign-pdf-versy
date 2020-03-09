@@ -46,11 +46,8 @@ VSTypes.h
 #include "VSConfig.h"
 #include "VSPlatform.h"
 
-#define _CRT_SECURE_NO_DEPRECATE
-
-
 typedef signed char ppInt8; /* standard signed one byte type,
-                            range is ñ128 to 127 */
+                            range is ÅE28 to 127 */
 typedef ppInt8 *PppInt8; /* pointer to ppInt8 */
 
 typedef unsigned char ppUns8; /* standard signed one byte type,
@@ -58,7 +55,7 @@ typedef unsigned char ppUns8; /* standard signed one byte type,
 typedef ppUns8 *PppUns8;    /* pointer to ppUns8 */
 
 typedef short int ppInt16;  /* standard signed two byte type,
-                            range is ñ32,768 to 32,767 */
+                            range is ÅE2,768 to 32,767 */
 typedef ppInt16 *PppInt16;  /* pointer to ppInt16 */
 
 typedef unsigned short int ppUns16; /* standard unsigned two byte type,
@@ -68,7 +65,7 @@ typedef ppUns16 *PppUns16;  /* pointer to ppUns16 */
 #ifdef PDFLARGEINT
 
     typedef int ppInt32;       /* standard signed four byte type,
-                           range is ñ2,147,483,648 to 2,147,483,647 */
+                           range is ÅE,147,483,648 to 2,147,483,647 */
     typedef ppInt32 *PppInt32; /* pointer to ppInt32 */
 
     typedef unsigned int ppUns32; /* standard signed four byte type,
@@ -78,7 +75,7 @@ typedef ppUns16 *PppUns16;  /* pointer to ppUns16 */
 #else
 
     typedef long int ppInt32;  /* standard signed four byte type,
-                           range is ñ2,147,483,648 to 2,147,483,647 */
+                           range is ÅE,147,483,648 to 2,147,483,647 */
     typedef ppInt32 *PppInt32; /* pointer to ppInt32 */
 
     typedef unsigned long int ppUns32; /* standard signed four byte type,
@@ -89,13 +86,13 @@ typedef ppUns16 *PppUns16;  /* pointer to ppUns16 */
 
 #ifdef WINDOWS_PLATFORM
     typedef signed __int64 ppInt64; /* standard signed eight byte type,
-                                range is ñ9,223,372,036,854,775,808
+                                range is ÅE,223,372,036,854,775,808
                                 to 9,223,372,036,854,775,807 */
     typedef unsigned __int64 ppUns64; /* standard signed eight byte type,
                                   range is 0 to 2^64-1 */
 #else
     typedef long long ppInt64;   /* standard signed eight byte type,
-                             range is ñ9,223,372,036,854,775,808
+                             range is ÅE,223,372,036,854,775,808
                              to 9,223,372,036,854,775,807 */
     typedef unsigned long long ppUns64; /* standard signed eight byte type,
                                     range is 0 to 2^64-1 */
@@ -117,9 +114,9 @@ typedef ppReal *PppReal; /* pointer to ppReal */
 #define ppMAXInt8           ((ppInt8)0x7F)          /* Maximum of ppInt8 range is 127 */
 #define ppMINInt8           ((ppInt8)0x80)          /* Minimum of ppInt8 range is -128 */
 #define ppMAXInt16          ((ppInt16)0x7FFF)       /* Maximum of ppInt8 range is 32,767 */
-#define ppMINInt16          ((ppInt16)0x8000)       /* Minimum of ppInt8 range is ñ32,768 */
+#define ppMINInt16          ((ppInt16)0x8000)       /* Minimum of ppInt8 range is ÅE2,768 */
 #define ppMAXInt32          ((ppInt32)0x7FFFFFFF)   /* Maximum of ppInt8 range is 2,147,483,647 */
-#define ppMINInt32          ((ppInt32)0x80000000)   /* Minimum of ppInt8 range is ñ2,147,483,648 */
+#define ppMINInt32          ((ppInt32)0x80000000)   /* Minimum of ppInt8 range is ÅE,147,483,648 */
 #define ppMAXUns8           ((ppUns8)0xFF)          /* Maximum of ppInt8 range is 255 */
 #define ppMINUns8           ((ppUns8)0x00)          /* Minimum of ppInt8 range is 0 */
 #define ppMAXUns16          ((ppUns16)0xFFFF)       /* Maximum of ppInt8 range is 65,535 */

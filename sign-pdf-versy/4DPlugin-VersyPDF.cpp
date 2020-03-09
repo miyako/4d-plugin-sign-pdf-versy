@@ -132,12 +132,13 @@ void SIGN_PDF(PA_PluginParameters params) {
                         ppInt32 size = 0;
                         
                         PDFTRY(Lib){
-                            const uint8_t *bytes = (const uint8_t *)PDFDocSaveToBuffer(Doc, &size);
-                            
-                            C_BLOB signedPdf;
-                            signedPdf.setBytes(bytes, static_cast<uint32_t>(size));
-                            signedPdf.toParamAtIndex(pParams, 1);
+							
+                            void *bytes = PDFDocSaveToBuffer(Doc, &size);
+
+							PA_SetBlobParameter(params, 1, bytes, static_cast<uint32_t>(size));
+
                             success = true;
+
                         }PDFEXCEPT(Lib){
                             
                         }PDFTRYEND(Lib);
@@ -157,8 +158,8 @@ void SIGN_PDF(PA_PluginParameters params) {
         Lib = NULL;
     }
     
-    ob_set_b(returnValue, L"success", success);
+   ob_set_b(returnValue, L"success", success);
     
-    PA_ReturnObject(params, returnValue);
+   PA_ReturnObject(params, returnValue);
 }
 
