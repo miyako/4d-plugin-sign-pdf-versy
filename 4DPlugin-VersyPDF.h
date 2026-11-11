@@ -19,7 +19,18 @@
 
 #include "4DPlugin-JSON.h"
 
+/*
+ VSPlatform.h enables PDFLARGEINT (32-bit ppInt32/ppUns32) for x86_64 but not
+ for arm64, where ppInt32 would be a 64-bit long. a/libversypdf.a is built with
+ it on arm64 too (scripts/build-macos-deps.sh), so the plugin must match.
+ */
+#if (defined(__aarch64__) || defined(__arm64__)) && !defined(PDFLARGEINT)
+#define PDFLARGEINT
+#endif
+
 #include "VersyPDF.h"
+
+static_assert(sizeof(ppInt32) == 4 && sizeof(ppUns32) == 4, "VersyPDF ppInt32 must be 32-bit");
 
 #include <vector>
 

@@ -180,6 +180,30 @@ jobs:
         with:
           ref: ${{ needs.version.outputs.tag }}
 
+      # a/libversypdf.a is built from pinned VersyPDF source as a universal
+      # archive (scripts/build-macos-deps.sh) and cached by the script's hash.
+      # The cache is saved right after the build, so a later signing or
+      # notarization failure does not throw the build away.
+      - name: restore prebuilt libraries
+        id: deps-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: a/libversypdf.a
+          key: macos-deps-${{ hashFiles('scripts/build-macos-deps.sh') }}
+
+      - name: build prebuilt libraries (cache miss)
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ env.MACOS_DEPLOYMENT_TARGET }}
+        run: bash scripts/build-macos-deps.sh a
+
+      - name: save prebuilt libraries
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: a/libversypdf.a
+          key: macos-deps-${{ hashFiles('scripts/build-macos-deps.sh') }}
+
       # Every library the Xcode project references must be present, and every
       # static or dynamic library the target links must carry arm64 + x86_64.
       # Paths are resolved through the project's group hierarchy, so a

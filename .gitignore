@@ -8,3 +8,4 @@ test/Project/DerivedData/
 /VersyPDF.zip
 test/Plugins/VersyPDF.bundle/Contents/MacOS/
 test/Plugins/VersyPDF.bundle/Contents/_CodeSignature/
+a/libversypdf.a

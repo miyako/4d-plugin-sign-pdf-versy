@@ -119,7 +119,8 @@ void SIGN_PDF(PA_PluginParameters params) {
                  the library dereferences NULL when the first line has no
                  '%', and frees an interior pointer when '%' is not the
                  first byte (ULCheckDocumentHeader); reject such input here
-                 with the error the library itself would report
+                 with the error the library itself would report (the macOS
+                 build patches this, the Windows library does not)
                  */
                 
                 bool hasHeader = (DocSize >= 8) && DocBuffer && (memcmp(DocBuffer, "%PDF-1.", 7) == 0);
