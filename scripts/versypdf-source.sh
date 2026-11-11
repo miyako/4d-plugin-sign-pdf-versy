@@ -55,7 +55,8 @@ versypdf_unpack() {
   rm -rf "${2:?}"; mkdir -p "$2"
   # read from stdin: Git Bash's GNU tar treats an absolute "D:/..." archive
   # path as a remote host:path ("Cannot connect to D: resolve failed")
-  tar -xzf - -C "$2" --strip-components 1 < "$1/$VERSY_TGZ"
+  # and extract inside the target dir so tar never sees a drive path at all
+  ( cd "$2" && tar -xzf - --strip-components 1 ) < "$1/$VERSY_TGZ"
   S="$2/sources"
 
   # arm64: VSPlatform.h treats every Unix CPU other than i386/alpha/ia64/

@@ -28,7 +28,10 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) WINDOWS=1 ;; *) WINDOWS=0 ;; esac
 
-WORK="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/versypdf-win-build"
+TMPBASE="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
+# RUNNER_TEMP is a Windows path (D:\a\_temp); Git Bash's tar can't use it
+command -v cygpath >/dev/null 2>&1 && TMPBASE="$(cygpath -u "$TMPBASE")"
+WORK="$TMPBASE/versypdf-win-build"
 mkdir -p "$WORK"
 versypdf_fetch "$WORK/dl"
 versypdf_unpack "$WORK/dl" "$WORK/src"   # sets S
