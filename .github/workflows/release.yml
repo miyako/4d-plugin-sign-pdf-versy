@@ -125,6 +125,28 @@ jobs:
           Write-Host "PlatformToolset: $toolset"
           "PLATFORM_TOOLSET=$toolset" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
+      # lib/windows64/libversypdf.lib is built from the pinned VersyPDF source
+      # (scripts/build-windows-deps.sh, same pin as macOS) with the plugin's
+      # toolset, /MT and no /GL, and cached per toolset and script hash.
+      - name: restore VersyPDF (Windows)
+        id: versypdf-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: lib/windows64/libversypdf.lib
+          key: win-versypdf-${{ env.PLATFORM_TOOLSET }}-${{ hashFiles('scripts/build-windows-deps.sh', 'scripts/versypdf-source.sh') }}
+
+      - name: build VersyPDF (Windows)
+        if: steps.versypdf-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: bash scripts/build-windows-deps.sh lib/windows64/libversypdf.lib "$PLATFORM_TOOLSET"
+
+      - name: save VersyPDF cache
+        if: steps.versypdf-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: lib/windows64/libversypdf.lib
+          key: win-versypdf-${{ env.PLATFORM_TOOLSET }}-${{ hashFiles('scripts/build-windows-deps.sh', 'scripts/versypdf-source.sh') }}
+
       # The vcxproj may pin a legacy toolset (v100/v140) and SDK 8.1 that the
       # runner lacks, so both are overridden on the command line.
       - name: build x64
@@ -189,7 +211,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: a/libversypdf.a
-          key: macos-deps-${{ hashFiles('scripts/build-macos-deps.sh') }}
+          key: macos-deps-${{ hashFiles('scripts/build-macos-deps.sh', 'scripts/versypdf-source.sh') }}
 
       - name: build prebuilt libraries (cache miss)
         if: steps.deps-cache.outputs.cache-hit != 'true'
@@ -202,7 +224,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: a/libversypdf.a
-          key: macos-deps-${{ hashFiles('scripts/build-macos-deps.sh') }}
+          key: macos-deps-${{ hashFiles('scripts/build-macos-deps.sh', 'scripts/versypdf-source.sh') }}
 
       # Every library the Xcode project references must be present, and every
       # static or dynamic library the target links must carry arm64 + x86_64.

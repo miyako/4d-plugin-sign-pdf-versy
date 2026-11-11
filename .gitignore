@@ -9,3 +9,4 @@ test/Project/DerivedData/
 test/Plugins/VersyPDF.bundle/Contents/MacOS/
 test/Plugins/VersyPDF.bundle/Contents/_CodeSignature/
 a/libversypdf.a
+lib/windows64/libversypdf.lib
