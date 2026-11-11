@@ -64,7 +64,8 @@ if [ "$WINDOWS" = 1 ]; then
   cmake -S "$S" -B "$WORK/build" -A x64 -T "$TOOLSET" \
     -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
     -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-  cmake --build "$WORK/build" --config Release --target versypdf -- /m
+  # --parallel, not "-- /m": Git Bash rewrites /-prefixed arguments as paths
+  cmake --build "$WORK/build" --config Release --target versypdf --parallel
 else
   cmake -S "$S" -B "$WORK/build" -DCMAKE_BUILD_TYPE=Release
   cmake --build "$WORK/build" --target versypdf -j 8

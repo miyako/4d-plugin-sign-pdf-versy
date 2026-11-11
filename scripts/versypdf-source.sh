@@ -53,7 +53,9 @@ patch_file() {
 # patches every platform needs; leaves S=<source dir>/sources
 versypdf_unpack() {
   rm -rf "${2:?}"; mkdir -p "$2"
-  tar -xzf "$1/$VERSY_TGZ" -C "$2" --strip-components 1
+  # read from stdin: Git Bash's GNU tar treats an absolute "D:/..." archive
+  # path as a remote host:path ("Cannot connect to D: resolve failed")
+  tar -xzf - -C "$2" --strip-components 1 < "$1/$VERSY_TGZ"
   S="$2/sources"
 
   # arm64: VSPlatform.h treats every Unix CPU other than i386/alpha/ia64/
