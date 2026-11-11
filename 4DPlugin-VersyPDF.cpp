@@ -10,6 +10,8 @@
 
 #include "4DPlugin-VersyPDF.h"
 
+#include <cstring>
+
 #pragma mark -
 
 void PluginMain(PA_long32 selector, PA_PluginParameters params) {
@@ -58,108 +60,194 @@ void SIGN_PDF(PA_PluginParameters params) {
     
     PA_ObjectRef returnValue = PA_CreateObject();
     
-    PDFDocHandle Doc = NULL;
-    PDFLibHandle Lib = NULL;
+    /*
+     the return value must always be set: an exception that reached the
+     catch(...) in PluginMain would leave 4D waiting for the result
+     */
     
-    C_TEXT Param3;
-    Param3.fromParamAtIndex(pParams, 3);
+    volatile bool success = false;
     
-    C_TEXT Param4;
-    Param4.fromParamAtIndex(pParams, 4);
-    
-    C_TEXT Param5;
-    Param5.fromParamAtIndex(pParams, 5);
-    
-    CUTF8String name, reason, password;
-    
-    Param3.copyUTF8String(&name);
-    Param4.copyUTF8String(&reason);
-    Param5.copyUTF8String(&password);
-    
-    char *Name = (char *)name.c_str();
-    char *Reason = (char *)reason.c_str();
-    char *Password = (char *)password.c_str();
-    
-    C_LONGINT Param6;
-    Param6.fromParamAtIndex(pParams, 6);
-    
-    ppBool PKCS7 = static_cast<ppBool>(Param6.getIntValue());
-    
-    bool success = false;
-    
-    Lib = InitPDFLibrary(NULL, NULL);
-    
-    if(Lib) {
+    try {
         
-        PA_Handle h1 = PA_GetBlobHandleParameter(params, 1);
+        PDFDocHandle Doc = NULL;
+        PDFLibHandle Lib = NULL;
         
-        if(h1) {
+        C_TEXT Param3;
+        Param3.fromParamAtIndex(pParams, 3);
+        
+        C_TEXT Param4;
+        Param4.fromParamAtIndex(pParams, 4);
+        
+        C_TEXT Param5;
+        Param5.fromParamAtIndex(pParams, 5);
+        
+        CUTF8String name, reason, password;
+        
+        Param3.copyUTF8String(&name);
+        Param4.copyUTF8String(&reason);
+        Param5.copyUTF8String(&password);
+        
+        char *Name = (char *)name.c_str();
+        char *Reason = (char *)reason.c_str();
+        char *Password = (char *)password.c_str();
+        
+        C_LONGINT Param6;
+        Param6.fromParamAtIndex(pParams, 6);
+        
+        ppBool PKCS7 = static_cast<ppBool>(Param6.getIntValue());
+        
+        C_BLOB signedPDF;
+        
+        Lib = InitPDFLibrary(NULL, NULL);
+        
+        if(Lib) {
             
-            ppInt32 DocSize = static_cast<ppInt32>(PA_GetHandleSize(h1));
+            PA_Handle h1 = PA_GetBlobHandleParameter(params, 1);
             
-            PDFTRY(Lib){
-                Doc = PDFDocLoadFromBuffer(Lib,
-                                           PA_LockHandle(h1),
-                                           DocSize);
-            }PDFEXCEPT(Lib){
+            if(h1) {
                 
-            }PDFTRYEND(Lib);
-            
-            PA_UnlockHandle(h1);
-            
-            if(Doc) {
+                ppInt32 DocSize = static_cast<ppInt32>(PA_GetHandleSize(h1));
                 
-                PA_Handle h2 = PA_GetBlobHandleParameter(params, 2);
+                /*
+                 PDFDocLoadFromBuffer does not copy the buffer: the document
+                 reads from it until PDFDocClose, so keep it locked until then
+                 */
                 
-                if(h2) {
-                    
+                void *DocBuffer = PA_LockHandle(h1);
+                
+                /*
+                 the library dereferences NULL when the first line has no
+                 '%', and frees an interior pointer when '%' is not the
+                 first byte (ULCheckDocumentHeader); reject such input here
+                 with the error the library itself would report
+                 */
+                
+                bool hasHeader = (DocSize >= 8) && DocBuffer && (memcmp(DocBuffer, "%PDF-1.", 7) == 0);
+                
+                if(hasHeader) {
                     PDFTRY(Lib){
-                        PDFDocAppendSignatureFromBuffer(Doc,
-                                                        PA_LockHandle(h2),
-                                                        static_cast<ppInt32>(PA_GetHandleSize(h2)),
-                                                        Name,
-                                                        Reason,
-                                                        PKCS7,
-                                                        Password);
+                        Doc = PDFDocLoadFromBuffer(Lib,
+                                                   DocBuffer,
+                                                   DocSize);
                     }PDFEXCEPT(Lib){
                         
                     }PDFTRYEND(Lib);
-                    
-                    PA_UnlockHandle(h2);
-                    
-                    if(!PPGetLastError(Lib)) {
+                }else{
+                    PDFTRY(Lib){
+                        PDFRAISE(Lib, PDFBuildErrCode(ErrCosLevel, cleNoHeaderError));
+                    }PDFEXCEPT(Lib){
                         
-                        ppInt32 size = 0;
+                    }PDFTRYEND(Lib);
+                }
+                
+                if(Doc) {
+                    
+                    PA_Handle h2 = PA_GetBlobHandleParameter(params, 2);
+                    
+                    if(h2) {
                         
                         PDFTRY(Lib){
-							
-                            void *bytes = PDFDocSaveToBuffer(Doc, &size);
-
-							PA_SetBlobParameter(params, 1, bytes, static_cast<uint32_t>(size));
-
-                            success = true;
-
+                            PDFDocAppendSignatureFromBuffer(Doc,
+                                                            PA_LockHandle(h2),
+                                                            static_cast<ppInt32>(PA_GetHandleSize(h2)),
+                                                            Name,
+                                                            Reason,
+                                                            PKCS7,
+                                                            Password);
                         }PDFEXCEPT(Lib){
                             
                         }PDFTRYEND(Lib);
                         
+                        PA_UnlockHandle(h2);
+                        
+                        if(!PPGetLastError(Lib)) {
+                            
+                            /*
+                             same as PDFDocSaveToBuffer, but the library frees
+                             its own memory (ULStreamClose) instead of handing
+                             the caller a malloc'ed buffer that was never freed
+                             */
+                            
+                            PDFStreamHandle Stream = NULL;
+                            
+                            PDFTRY(Lib){
+                                Stream = ULStreamMemNew(Lib, 0);
+                            }PDFEXCEPT(Lib){
+                                
+                            }PDFTRYEND(Lib);
+                            
+                            if(Stream) {
+                                
+                                volatile bool saved = false;
+                                
+                                PDFTRY(Lib){
+                                    PDFDocSaveToStream(Doc, Stream);
+                                    saved = true;
+                                }PDFEXCEPT(Lib){
+                                    
+                                }PDFTRYEND(Lib);
+                                
+                                if(saved) {
+                                    
+                                    ppUns32 size = ULStreamGetSize(Stream);
+                                    
+                                    std::vector<uint8_t> buf(size);
+                                    
+                                    if(size) {
+                                        ULStreamSetPosition(Stream, 0);
+                                        size = ULStreamReadBuffer(Stream, &buf[0], size);
+                                    }
+                                    
+                                    signedPDF.setBytes(size ? &buf[0] : NULL, static_cast<uint32_t>(size));
+                                    
+                                    success = true;
+                                }
+                                
+                                ULStreamClose(Stream);
+                            }
+                            
+                        }
+                        
                     }
                     
+                    /* an error raised outside PDFTRY calls exit() */
+                    
+                    PDFTRY(Lib){
+                        PDFDocClose(Doc);
+                    }PDFEXCEPT(Lib){
+                        
+                    }PDFTRYEND(Lib);
+                    
+                    Doc = NULL;
                 }
-                PDFDocClose(Doc);
+                
+                PA_UnlockHandle(h1);
+                
+                if(success) {
+                    /* disposes the original BLOB handle before replacing it */
+                    signedPDF.toParamAtIndex(pParams, 1);
+                }
+                
+            }else{
+                PDFTRY(Lib){
+                    PDFRAISE(Lib, PDFBuildErrCode(ErrCosLevel, cleNoHeaderError));
+                }PDFEXCEPT(Lib){
+                    
+                }PDFTRYEND(Lib);
             }
             
+            setStatus(returnValue, Lib);
+            
+            DonePDFLibrary(&Lib);
+            
+            Lib = NULL;
         }
         
-        setStatus(returnValue, Lib);
-        
-        DonePDFLibrary(&Lib);
-        
-        Lib = NULL;
+    } catch (...) {
+        success = false;
     }
     
-   ob_set_b(returnValue, L"success", success);
+    ob_set_b(returnValue, L"success", success);
     
-   PA_ReturnObject(params, returnValue);
+    PA_ReturnObject(params, returnValue);
 }
-
