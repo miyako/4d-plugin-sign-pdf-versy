@@ -1,0 +1,10 @@
+.DS_Store
+build/
+test/Data/Logs/
+test/Logs/
+test/userPreferences.*
+test/Project/DerivedData/
+/VersyPDF.dmg
+/VersyPDF.zip
+test/Plugins/VersyPDF.bundle/Contents/MacOS/
+test/Plugins/VersyPDF.bundle/Contents/_CodeSignature/
